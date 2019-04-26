@@ -1,7 +1,9 @@
 import serial
 import pygame
-import array
 import time
+import pyrealsense2 as rs
+#import imageio
+import numpy as np
 
 class CollectTrainingData(object):
 
@@ -10,6 +12,7 @@ class CollectTrainingData(object):
 		pygame.init()
 		pygame.display.set_mode((250,250))
 		self.command = ['Z','Z','\n']
+		self.pipeline = rs.pipeline() self.config = rs.config() self.config.enable_stream(rs.stream.color,640,480,rs.format.bgr8) pipeline.start(config)
 
 	def send(self,command):
 		command = [ ord(i) for i in command ]
@@ -19,6 +22,12 @@ class CollectTrainingData(object):
 	
 	def drive(self):
 		while True:
+			# get the image from the camera
+			frames = pipeline.wait_for_frames()
+			color_frame = frames.get_color_frame()
+			color_image = np.asanyarray(color_frame.get_data())	
+
+			# prepare the command to send to the arduino
 			changed = False
 			for event in pygame.event.get():
 				if event.type == pygame.KEYDOWN:
@@ -44,9 +53,17 @@ class CollectTrainingData(object):
 						self.command[0] = 'Z'
 						changed = True
 			if changed: self.send(self.command)
-			time.sleep(.05)
+
+			# save the image
+			name_str = "%d_%d.png" % self.command
+			# TODO: save image, determine directory to save in	# TODO: save image, determine directory to save in	# TODO: save image, determine directory to save in	
+
+
+			time.sleep(.033)
+
 	def __del__(self):
 		self.ser.close()
+		self.pipeline.stop()
 		
 if __name__ == '__main__':
 	serial_port = '/dev/ttyTHS2'
