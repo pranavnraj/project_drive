@@ -2,7 +2,7 @@ import serial
 import pygame
 import time
 import pyrealsense2 as rs
-#import imageio
+import cv2
 import numpy as np
 
 class CollectTrainingData(object):
@@ -12,7 +12,10 @@ class CollectTrainingData(object):
 		pygame.init()
 		pygame.display.set_mode((250,250))
 		self.command = ['Z','Z','\n']
-		self.pipeline = rs.pipeline() self.config = rs.config() self.config.enable_stream(rs.stream.color,640,480,rs.format.bgr8) pipeline.start(config)
+		self.pipeline = rs.pipeline() 
+		self.config = rs.config() 
+		self.config.enable_stream(rs.stream.color,640,480,rs.format.bgr8,30)
+		self.pipeline.start(self.config)
 
 	def send(self,command):
 		command = [ ord(i) for i in command ]
@@ -21,9 +24,10 @@ class CollectTrainingData(object):
 		self.ser.write(b)
 	
 	def drive(self):
+		print("Logging started.")
 		while True:
 			# get the image from the camera
-			frames = pipeline.wait_for_frames()
+			frames = self.pipeline.wait_for_frames()
 			color_frame = frames.get_color_frame()
 			color_image = np.asanyarray(color_frame.get_data())	
 
@@ -55,11 +59,9 @@ class CollectTrainingData(object):
 			if changed: self.send(self.command)
 
 			# save the image
-			name_str = "%d_%d.png" % self.command
-			# TODO: save image, determine directory to save in	# TODO: save image, determine directory to save in	# TODO: save image, determine directory to save in	
-
-
-			time.sleep(.033)
+			name_str = "%d_%c_%c.png" % (time.time(), self.command[0], self.command[1])
+			# TODO: save image, determine directory to save in
+			cv2.imwrite("data/" + name_str, color_image)
 
 	def __del__(self):
 		self.ser.close()
