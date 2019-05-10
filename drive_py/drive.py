@@ -5,6 +5,7 @@ import pyrealsense2 as rs
 import cv2
 import numpy as np
 
+
 class CollectTrainingData(object):
 
 	def __init__(self,serial_port,baud_rate):
@@ -33,6 +34,7 @@ class CollectTrainingData(object):
 
 			# prepare the command to send to the arduino
 			changed = False
+			cmd_id = 0
 			for event in pygame.event.get():
 				if event.type == pygame.KEYDOWN:
 					if event.key == pygame.K_UP: 
@@ -56,11 +58,18 @@ class CollectTrainingData(object):
 					if event.key == pygame.K_LEFT or event.key == pygame.K_RIGHT:
 						self.command[0] = 'Z'
 						changed = True
-			if changed: self.send(self.command)
+			if changed: 
+				self.send(self.command)
 
-			# save the image
-			name_str = "%d_%c_%c.png" % (time.time(), self.command[0], self.command[1])
-			# TODO: save image, determine directory to save in
+			# construct the command id
+			if (self.command[0] == 'z') cmd_id += 1 		
+			elif (self.command[0] == 'A') cmd_id += 2
+
+			if (self.command[1] == 'e') cmd_id += 3		
+			elif (self.command[1] == 'P') cmd_id += 6 		
+
+			# save the image in the data directory
+			name_str = "%d_%d.png" % (time.time(), cmd_id)
 			cv2.imwrite("data/" + name_str, color_image)
 
 	def __del__(self):
