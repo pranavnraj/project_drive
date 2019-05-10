@@ -26,8 +26,8 @@ class CollectTrainingData(object):
 
 	def drive(self):
 		print("Logging started.")
-                last_time = 0
-                index_at_time = 0
+		last_time = int(time.time())
+		index_at_time = 0
 		while True:
 			# get the image from the camera
 			frames = self.pipeline.wait_for_frames()
@@ -64,14 +64,19 @@ class CollectTrainingData(object):
 				self.send(self.command)
 
 			# construct the command id
-			if (self.command[0] == 'z') cmd_id += 1
-			elif (self.command[0] == 'A') cmd_id += 2
+			if (self.command[0] == 'z'): cmd_id += 1
+			elif (self.command[0] == 'A'): cmd_id += 2
 
-			if (self.command[1] == 'e') cmd_id += 3
-			elif (self.command[1] == 'P') cmd_id += 6
+			if (self.command[1] == 'e'): cmd_id += 3
+			elif (self.command[1] == 'P'): cmd_id += 6
+			print(cmd_id)
 
-                        if (time.time() == last_time): index_at_time += 1
-                        else: index_at_time = 0
+			# add 1 to counter for every frame in the same second
+			if (int(time.time()) == last_time): 
+				index_at_time += 1
+			else: 
+			 	index_at_time = 0
+			 	last_time = int(time.time())
 
 			# save the image in the data directory
 			name_str = "%d_%d_%d.png" % (time.time(), index_at_time, cmd_id)
