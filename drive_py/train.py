@@ -7,10 +7,23 @@ import os
 
 
 # Load images and labels
-train_images = np.array()
-labels = np.array()
-current_path = os.getcwd()
-img_folder_path = os.path.join(current_path, "processed_data")
+def load_train_data():
+	train_images = []
+	train_labels = []
+	current_path = os.getcwd()
+	img_folder_path = os.path.join(current_path, "processed_data")
+	for img_name in os.listdir(img_folder_path):
+		label = int(img_name[:-4].split('_')[1])
+		img_path = os.path.join(img_folder_path, img_name)
+		img = cv2.imread(img_path, cv2.CV_8UC1)
+		train_images.append(img)
+		train_labels.append(label)
+	train_images = np.asarray(train_images)
+	train_images = train_images / 255.0
+	train_labels = np.asarray(train_labels)
+	return train_images,train_labels
+
+	
 
 
 # Create the neural network
