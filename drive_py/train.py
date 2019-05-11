@@ -1,10 +1,13 @@
 import tensorflow as tf
 from tensorflow import keras
 
+import logging
 import cv2
 import numpy as np
 import os
 
+# Set up logger
+logging.basicConfig(filename='train.log', level=logging.DEBUG);
 
 # Load images and labels
 def load_train_data():
@@ -35,6 +38,20 @@ model = keras.Sequential([
 
 # TODO: Determine what settings work best for our data set
 model.compile(optimizer='adam',
-		loss='sparse_categorical_crossentropy',
-		metrics=['accuracy'])
+	loss='sparse_categorical_crossentropy',
+	metrics=['accuracy'])
+
+train_images, train_labels = load_train_data()
+
+model.fit(train_images, train_labels, epochs=5)
+
+test_loss, test_acc = model.evaluate(#TODO Fill this with test data# );
+
+if( test_acc >= 0.85):
+	logging.info("Reached accuracy threshold")
+else 
+	logging.warning("Below accuracy threshold!"):
+
+def predict():
+	predictions = model.predict(#test_images);
 
