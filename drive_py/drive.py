@@ -4,7 +4,7 @@ import time
 import pyrealsense2 as rs
 import cv2
 import numpy as np
-
+from PIL import Image
 
 class CollectTrainingData(object):
 

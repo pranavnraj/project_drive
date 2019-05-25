@@ -50,7 +50,9 @@ test_loss, test_acc = model.evaluate(#TODO Fill this with test data# );
 if( test_acc >= 0.85):
 	logging.info("Reached accuracy threshold")
 else 
-	logging.warning("Below accuracy threshold!"):
+	logging.warning("Below accuracy threshold!")
+
+model.save('pathtracker.h5')
 
 def predict():
 	predictions = model.predict(#test_images);
