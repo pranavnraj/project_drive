@@ -22,7 +22,7 @@ class CollectTrainingData(object):
 		command = [ ord(i) for i in command ]
 		b = bytearray(command)
 		print("Sending: " + str(b))
-		self.ser.write(b)
+		self.ser.write(b)	
 
 	def drive(self):
 		print("Logging started.")
@@ -80,7 +80,12 @@ class CollectTrainingData(object):
 
 			# save the image in the data directory
 			name_str = "%d_%d_%d.png" % (time.time(), index_at_time, cmd_id)
-			cv2.imwrite("data/" + name_str, color_image)
+			
+			# convert to grayscale and shrink for better storage & faster processing
+			processed_img = cv2.cvtColor(color_image,CV_8UC1)
+			processed_img = cv2.resize(processed_img, (28,28))
+
+			cv2.imwrite("processed_data/" + name_str, processed_img)
 
 	def __del__(self):
 		self.ser.close()
