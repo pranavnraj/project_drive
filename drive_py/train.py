@@ -29,12 +29,10 @@ def train():
 	model = keras.Sequential([
 		keras.layers.Flatten(input_shape=(28,28)),
 		keras.layers.Dense(128, activation=tf.nn.relu),
-		keras.layers.Dense(9, activation=tf.nn.softmax)
+		keras.layers.Dense(3, activation=tf.nn.softmax)
 	])
 
-	opt = keras.optimizers.Adam(lr=0.001, amsgrad=True)
-	# TODO: Determine what settings work best for our data set
-	model.compile(optimizer=opt,
+	model.compile(optimizer='adam',
 		loss='sparse_categorical_crossentropy',
 		metrics=['accuracy'])
 
@@ -47,6 +45,8 @@ def train():
 	model.fit(train_images, train_labels, epochs=100)
 
 	test_loss, test_acc = model.evaluate(test_images, test_labels);
+	
+	print("Test loss: {}%, Test accuracy: {}%".format(test_loss*100, test_acc*100)
 
 	if( test_acc >= 0.85):
 		logging.info("Reached accuracy threshold")

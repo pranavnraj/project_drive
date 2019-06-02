@@ -6,8 +6,7 @@ import cv2
 import numpy as np
 from PIL import Image
 
-FORWARD_CHAR = 'b'
-BACKWARD_CHAR = 'H'
+FORWARD_CHAR = 'a'
 LEFT_CHAR = 'z'
 RIGHT_CHAR = '='
 NEUTRAL_CHAR = 'Z'
@@ -16,13 +15,17 @@ class CollectTrainingData(object):
 
 	def __init__(self,serial_port,baud_rate):
 		self.ser = serial.Serial(serial_port,baud_rate)
+		
+
+	def __enter__(self):
 		pygame.init()
 		pygame.display.set_mode((250,250))
-		self.command = [NEUTRAL_CHAR,NEUTRAL_CHAR,'\n']
+		self.command = [NEUTRAL_CHAR,FORWARD_CHAR,'\n']
 		self.pipeline = rs.pipeline()
 		self.config = rs.config()
 		self.config.enable_stream(rs.stream.color,640,480,rs.format.bgr8,15)
 		self.pipeline.start(self.config)
+		return self
 
 	def send(self,command):
 		command = [ ord(i) for i in command ]
@@ -45,12 +48,6 @@ class CollectTrainingData(object):
 			cmd_id = 0
 			for event in pygame.event.get():
 				if event.type == pygame.KEYDOWN:
-					if event.key == pygame.K_UP:
-						self.command[1] = FORWARD_CHAR
-						changed = True
-					if event.key == pygame.K_DOWN:
-						self.command[1] = BACKWARD_CHAR
-						changed = True
 					if event.key == pygame.K_LEFT:
 						self.command[0] = LEFT_CHAR
 						changed = True
@@ -60,9 +57,6 @@ class CollectTrainingData(object):
 					if event.key == pygame.K_ESCAPE:
 						return
 				elif event.type == pygame.KEYUP:
-					if event.key == pygame.K_UP or event.key == pygame.K_DOWN:
-						self.command[1] = NEUTRAL_CHAR
-						changed = True
 					if event.key == pygame.K_LEFT or event.key == pygame.K_RIGHT:
 						self.command[0] = NEUTRAL_CHAR
 						changed = True
@@ -70,12 +64,9 @@ class CollectTrainingData(object):
 				self.send(self.command)
 
 			# construct the command id
-			if (self.command[0] == LEFT_CHAR): cmd_id += 1
-			elif (self.command[0] == RIGHT_CHAR): cmd_id += 2
-
-			if (self.command[1] == FORWARD_CHAR): cmd_id += 3
-			elif (self.command[1] == BACKWARD_CHAR): cmd_id += 6
-			#print(cmd_id)
+			if (self.command[0] == LEFT_CHAR): cmd_id = 1
+			elif (self.command[0] == RIGHT_CHAR): cmd_id = 2
+			else: cmd_id = 0
 
 			# add 1 to counter for every frame in the same second
 			if (int(time.time()) == last_time): 
@@ -93,7 +84,10 @@ class CollectTrainingData(object):
 
 			cv2.imwrite("processed_data/"+ name_str, processed_img)
 
-	def __del__(self):
+	def __exit__(self, type, value, traceback):
+		# stop the car on program end
+		self.command = [NEUTRAL_CHAR, NEUTRAL_CHAR, '\n']
+		self.send(self.command)
 		self.ser.close()
 		self.pipeline.stop()
 
@@ -101,7 +95,7 @@ if __name__ == '__main__':
 	serial_port = '/dev/ttyTHS2'
 	baud_rate = 115200
 
-	driver = CollectTrainingData(serial_port,baud_rate)
-	driver.drive()
-	del driver
+	input("Press enter to start.")
+	with CollectTrainingData(serial_port,baud_rate) as driver:
+		driver.drive()
 

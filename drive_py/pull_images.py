@@ -8,7 +8,6 @@ import serial
 from PIL import Image
 
 FORWARD_CHAR = 'b'
-BACKWARD_CHAR = 'H'
 LEFT_CHAR = 'z'
 RIGHT_CHAR = '='
 NEUTRAL_CHAR = 'Z'
@@ -16,11 +15,14 @@ NEUTRAL_CHAR = 'Z'
 class Predictor(object):
 	def __init__(self, serial_port, baud_rate):
 		self.ser = serial.Serial(serial_port,baud_rate)
+		self.cmd_id = 0
+		
+
+	def __enter__(self):
 		self.pipeline = rs.pipeline()
 		self.config = rs.config()
 		self.config.enable_stream(rs.stream.color,640,480,rs.format.bgr8,15)
 		self.pipeline.start(self.config)
-		self.cmd_id = 0
 
 		# limit memory allocated to jetson
 		config = tf.ConfigProto()
@@ -30,21 +32,16 @@ class Predictor(object):
 
 
 		self.current_model = keras.models.load_model('pathtracker.h5')
+		return self
+		
 
 	def send(self):
-		command = [NEUTRAL_CHAR,NEUTRAL_CHAR,'\n']
-		steering_id = self.cmd_id % 3
-		speed_id = self.cmd_id // 3
+		command = [NEUTRAL_CHAR,FORWARD_CHAR,'\n']
 
-		if steering_id == 1:
+		if self.cmd_id == 1:
 		    command[0] = LEFT_CHAR
-		elif steering_id == 2:
+		elif self.cmd_id == 2:
 		    command[0] = RIGHT_CHAR
-
-		if speed_id == 1:
-		    command[1] = FORWARD_CHAR
-		elif speed_id == 2:
-		    command[1] = BACKWARD_CHAR
 
 		b = bytearray([ ord(i) for i in command ])
 		self.ser.write(b)
@@ -74,7 +71,7 @@ class Predictor(object):
 			if old_cmd != self.cmd_id:
 				self.send()
 
-	def __del__(self):
+	def __exit__(self, type, value, traceback):
 		self.cmd_id = 0
 		self.send()	
 		self.ser.close()
@@ -84,12 +81,9 @@ if __name__ == '__main__':
 	serial_port = '/dev/ttyTHS2'
 	baud_rate = 115200
 
-	predictor = Predictor(serial_port, baud_rate)
 	input("Press enter to begin.")
-	try:
+	with Predictor(serial_port, baud_rate) as predictor:
 		predictor.drive()
-	except KeyboardInterrupt:
-		del predictor
 
 
 
