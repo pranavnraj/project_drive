@@ -1,7 +1,7 @@
 FORWARD_CHAR = 'a'
 BACKWARD_CHAR = 'H'
-LEFT_CHAR = '}'
-RIGHT_CHAR = ':'
-NEUTRAL_CHAR = 'Z'
+LEFT_CHAR = chr(127)
+RIGHT_CHAR = chr(45)
+NEUTRAL_CHAR = chr(90)
 
 

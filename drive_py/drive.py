@@ -33,6 +33,7 @@ class CollectTrainingData(object):
 		print("Logging started.")
 		last_time = int(time.time())
 		index_at_time = 0
+		changed = True
 		while True:
 			# get the image from the camera
 			frames = self.pipeline.wait_for_frames()
@@ -40,8 +41,7 @@ class CollectTrainingData(object):
 			color_image = np.asanyarray(color_frame.get_data())
 
 			# prepare the command to send to the arduino
-			changed = False
-			cmd_id = 0
+			cmd_id = -1
 			for event in pygame.event.get():
 				if event.type == pygame.KEYDOWN:
 					if event.key == pygame.K_LEFT:
@@ -79,6 +79,7 @@ class CollectTrainingData(object):
 			processed_img = cv2.resize(processed_img, (28,28))
 
 			cv2.imwrite("processed_data/"+ name_str, processed_img)
+			changed = False
 
 	def __exit__(self, type, value, traceback):
 		# stop the car on program end
