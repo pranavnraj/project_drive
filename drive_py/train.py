@@ -1,6 +1,5 @@
 import tensorflow as tf 
 from tensorflow import keras
-#from keras.backend.tensorflow_backend import set_session
 
 import logging
 import cv2
@@ -14,7 +13,7 @@ def load_data(folder_name):
 	current_path = os.getcwd()
 	img_folder_path = os.path.join(current_path, folder_name)
 	for img_name in os.listdir(img_folder_path):
-		label = int(img_name[:-4].split('_')[1])
+		label = int(img_name[:-4].split('_')[-1])
 		img_path = os.path.join(img_folder_path, img_name)
 		img = cv2.imread(img_path, cv2.CV_8UC1)
 		images.append(img)
@@ -33,16 +32,19 @@ def train():
 		keras.layers.Dense(9, activation=tf.nn.softmax)
 	])
 
+	opt = keras.optimizers.Adam(lr=0.001, amsgrad=True)
 	# TODO: Determine what settings work best for our data set
-	model.compile(optimizer='adam',
+	model.compile(optimizer=opt,
 		loss='sparse_categorical_crossentropy',
 		metrics=['accuracy'])
 
 	train_images, train_labels = load_data("processed_data")
 
-	test_images, test_labels = load_data("test_data")
+	
+	test_images, test_labels = (train_images[len(train_images)//5:], train_labels[len(train_labels//5):])
+#	train_images, train_labels = (train_images[:len(train_images)//5], train_labels[:len(train_labels//5)])
 
-	model.fit(train_images, train_labels, epochs=5)
+	model.fit(train_images, train_labels, epochs=100)
 
 	test_loss, test_acc = model.evaluate(test_images, test_labels);
 

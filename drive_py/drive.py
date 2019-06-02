@@ -6,22 +6,28 @@ import cv2
 import numpy as np
 from PIL import Image
 
+FORWARD_CHAR = 'b'
+BACKWARD_CHAR = 'H'
+LEFT_CHAR = 'z'
+RIGHT_CHAR = '='
+NEUTRAL_CHAR = 'Z'
+
 class CollectTrainingData(object):
 
 	def __init__(self,serial_port,baud_rate):
 		self.ser = serial.Serial(serial_port,baud_rate)
 		pygame.init()
 		pygame.display.set_mode((250,250))
-		self.command = ['Z','Z','\n']
+		self.command = [NEUTRAL_CHAR,NEUTRAL_CHAR,'\n']
 		self.pipeline = rs.pipeline()
 		self.config = rs.config()
-		self.config.enable_stream(rs.stream.color,640,480,rs.format.bgr8,6)
+		self.config.enable_stream(rs.stream.color,640,480,rs.format.bgr8,15)
 		self.pipeline.start(self.config)
 
 	def send(self,command):
 		command = [ ord(i) for i in command ]
 		b = bytearray(command)
-		print("Sending: " + str(b))
+		#print("Sending: " + str(b))
 		self.ser.write(b)	
 
 	def drive(self):
@@ -40,36 +46,36 @@ class CollectTrainingData(object):
 			for event in pygame.event.get():
 				if event.type == pygame.KEYDOWN:
 					if event.key == pygame.K_UP:
-						self.command[1] = 'e'
+						self.command[1] = FORWARD_CHAR
 						changed = True
 					if event.key == pygame.K_DOWN:
-						self.command[1] = 'P'
+						self.command[1] = BACKWARD_CHAR
 						changed = True
 					if event.key == pygame.K_LEFT:
-						self.command[0] = 'z'
+						self.command[0] = LEFT_CHAR
 						changed = True
 					if event.key == pygame.K_RIGHT:
-						self.command[0] = 'A'
+						self.command[0] = RIGHT_CHAR
 						changed = True
 					if event.key == pygame.K_ESCAPE:
 						return
 				elif event.type == pygame.KEYUP:
 					if event.key == pygame.K_UP or event.key == pygame.K_DOWN:
-						self.command[1] = 'Z'
+						self.command[1] = NEUTRAL_CHAR
 						changed = True
 					if event.key == pygame.K_LEFT or event.key == pygame.K_RIGHT:
-						self.command[0] = 'Z'
+						self.command[0] = NEUTRAL_CHAR
 						changed = True
 			if changed:
 				self.send(self.command)
 
 			# construct the command id
-			if (self.command[0] == 'z'): cmd_id += 1
-			elif (self.command[0] == 'A'): cmd_id += 2
+			if (self.command[0] == LEFT_CHAR): cmd_id += 1
+			elif (self.command[0] == RIGHT_CHAR): cmd_id += 2
 
-			if (self.command[1] == 'e'): cmd_id += 3
-			elif (self.command[1] == 'P'): cmd_id += 6
-			print(cmd_id)
+			if (self.command[1] == FORWARD_CHAR): cmd_id += 3
+			elif (self.command[1] == BACKWARD_CHAR): cmd_id += 6
+			#print(cmd_id)
 
 			# add 1 to counter for every frame in the same second
 			if (int(time.time()) == last_time): 
@@ -82,10 +88,10 @@ class CollectTrainingData(object):
 			name_str = "%d_%d_%d.png" % (time.time(), index_at_time, cmd_id)
 			
 			# convert to grayscale and shrink for better storage & faster processing
-			processed_img = cv2.cvtColor(color_image,CV_8UC1)
+			processed_img = cv2.cvtColor(color_image,cv2.COLOR_BGR2GRAY)
 			processed_img = cv2.resize(processed_img, (28,28))
 
-			cv2.imwrite("processed_data/" + name_str, processed_img)
+			cv2.imwrite("processed_data/"+ name_str, processed_img)
 
 	def __del__(self):
 		self.ser.close()
