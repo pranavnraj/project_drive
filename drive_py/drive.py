@@ -4,12 +4,8 @@ import time
 import pyrealsense2 as rs
 import cv2
 import numpy as np
-from PIL import Image
 
-FORWARD_CHAR = 'a'
-LEFT_CHAR = 'z'
-RIGHT_CHAR = '='
-NEUTRAL_CHAR = 'Z'
+from globals import *
 
 class CollectTrainingData(object):
 

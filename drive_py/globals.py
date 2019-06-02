@@ -1,0 +1,7 @@
+FORWARD_CHAR = 'a'
+BACKWARD_CHAR = 'H'
+LEFT_CHAR = '}'
+RIGHT_CHAR = ':'
+NEUTRAL_CHAR = 'Z'
+
+

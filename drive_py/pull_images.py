@@ -7,10 +7,7 @@ import numpy as np
 import serial
 from PIL import Image
 
-FORWARD_CHAR = 'b'
-LEFT_CHAR = 'z'
-RIGHT_CHAR = '='
-NEUTRAL_CHAR = 'Z'
+from globals import *
 
 class Predictor(object):
 	def __init__(self, serial_port, baud_rate):
