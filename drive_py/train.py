@@ -60,12 +60,9 @@ def train():
 
 def train_cnn():
 	model = keras.Sequential([
-		keras.layers.Conv2D(128, kernel_size=(3,3), strides=(2,2), activation=tf.nn.relu, input_shape=(28,28,1),padding='same'),
-		keras.layers.MaxPooling2D(pool_size=(2,2),padding='same'),
-		keras.layers.Conv2D(64, kernel_size=(3,3), strides=(2,2), activation=tf.nn.relu),
-		keras.layers.MaxPooling2D(pool_size=(2,2),padding='same'), 
-		keras.layers.Conv2D(32, kernel_size=(3,3), strides=(1,1), activation=tf.nn.relu), 
-		keras.layers.MaxPooling2D(pool_size=(2,2),padding='same'),
+		keras.layers.Conv2D(24, kernel_size=(5,5), strides=(2,2), activation=tf.nn.relu, input_shape=(28,28,1),padding='same'),
+		keras.layers.Conv2D(32, kernel_size=(5,5), strides=(2,2), activation=tf.nn.relu),
+		keras.layers.Conv2D(64, kernel_size=(3,3), strides=(1,1), activation=tf.nn.relu), 
 		keras.layers.Flatten(),
 		keras.layers.Dense(128, activation=tf.nn.relu),
 		keras.layers.Dropout(0.1),
@@ -74,8 +71,7 @@ def train_cnn():
 		keras.layers.Dense(3, activation=tf.nn.softmax)
 	])
 
-	opt = keras.optimizers.Adam(amsgrad=True)
-	model.compile(optimizer=opt,
+	model.compile(optimizer="adam",
 		loss='sparse_categorical_crossentropy',
 		metrics=['accuracy'])
 
@@ -87,11 +83,11 @@ def train_cnn():
 	test_images, test_labels = (train_images[split:], train_labels[split:])
 	train_images, train_labels = (train_images[:split], train_labels[:split])
 
-	model.fit(train_images, train_labels, validation_data=(test_images,test_labels), epochs=25)
+	model.fit(train_images, train_labels, validation_data=(test_images,test_labels), epochs=10)
 
 	test_loss, test_acc = model.evaluate(test_images, test_labels);
 	
-	print("Test loss: {}%, Test accuracy: {}%".format(test_loss*100, test_acc*100))
+	print("Test loss: {}, Test accuracy: {}%".format(round(test_loss,2), round(test_acc*100,2)))
 
 	if test_acc >= 0.85:
 		logging.info("Reached accuracy threshold")
